@@ -49,4 +49,20 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
         ];
     }
+
+    // Relationships
+    public function activities()
+    {
+        return $this->hasMany(Activity::class, 'created_by');
+    }
+
+    public function activityUpdates()
+    {
+        return $this->hasMany(ActivityUpdate::class);
+    }
+
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
 }
