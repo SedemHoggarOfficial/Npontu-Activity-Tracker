@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ActivityUpdate extends Model
 {
+    use HasFactory;
+    
     protected $fillable = [
         'activity_id',
         'user_id',
@@ -32,7 +35,7 @@ class ActivityUpdate extends Model
 
     public function status()
     {
-        return $this->hasOne(ActivityStatus::class);
+        return $this->belongsTo(ActivityStatus::class, 'status_id');
     }
 
      // Scopes

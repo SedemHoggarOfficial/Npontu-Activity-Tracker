@@ -52,9 +52,48 @@ export interface Activity {
   updated_at: string;
 }
 
+// export interface Activity {
+//   id: number;
+//   title: string;
+//   description: string;
+//   status_id: number;
+//   status: {
+//     id: number;
+//     name: string;
+//     color?: string;
+//   };
+//   created_by: {
+//     id: number;
+//     name: string;
+//   };
+//   updated_at: string;
+//   created_at: string;
+//   updates: ActivityUpdate[];
+// }
+
 export interface ActivityStatus {
   id: number;
   name: string;
+}
+
+export interface ActivityUpdate {
+    id: number;
+    activity?: Activity & { id: number };
+    user?: { id: number; name: string; email?: string };
+    status?: ActivityStatus;
+    remark?: string;
+    created_at: string;
+    [key: string]: unknown;
+}
+
+export interface ActivityUpdate {
+    id: number;
+    activity?: Activity;
+    user?: User;
+    status?: ActivityStatus;
+    remark?: string | null;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface Paginator<T> {

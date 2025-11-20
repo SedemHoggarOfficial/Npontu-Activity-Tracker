@@ -16,6 +16,6 @@ class ActivitySeeder extends Seeder
     public function run(): void
     {
         DB::table('activities')->truncate();
-        Activity::factory()->count(50)->create();
+        Activity::factory()->count(5)->create();
     }
 }

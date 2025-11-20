@@ -14,11 +14,10 @@ class ActivityStatusSeeder extends Seeder
      */
     public function run(): void
     {
+        ActivityStatus::truncate();
         DB::table('activity_statuses')->insertOrIgnore([
             ['name' => 'pending', 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'done', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'in_progress', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'on_hold', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         // $statuses = ['pending', 'done', 'in_progress', 'on_hold'];

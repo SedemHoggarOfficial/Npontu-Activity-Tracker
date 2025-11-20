@@ -35,7 +35,7 @@ class Activity extends Model
 
     public function status()
     {
-        return $this->hasOne(ActivityStatus::class);
+        return $this->belongsTo(ActivityStatus::class, 'status_id');
     }
 
     // Scopes

@@ -5,6 +5,10 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use App\Models\ActivityStatus;
+use App\Models\Activity;
+use App\Models\ActivityUpdate;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,11 +19,21 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
+        ActivityUpdate::query()->delete(); // delete child table first
+        Activity::query()->delete();       // then activities
+        ActivityStatus::query()->delete(); // then statuses
+
+        $this->call([
+            ActivityStatusSeeder::class,
+            ActivitySeeder::class,
+            ActivityUpdateSeeder::class,
+        ]);
+
         User::firstOrCreate(
-            ['email' => 'test@example.com'],
+            ['email' => 'sedemhoggar@gmail.com'],
             [
-                'name' => 'Test User',
-                'password' => 'password',
+                'name' => 'Sedem Hoggar',
+                'password' => '11111111',
                 'email_verified_at' => now(),
             ]
         );
