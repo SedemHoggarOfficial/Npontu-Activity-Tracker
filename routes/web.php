@@ -16,6 +16,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
+    // Dashboard JSON endpoint for stats
+    Route::get('dashboard-data', [\App\Http\Controllers\DashboardController::class, 'stats'])->name('dashboard.data');
+
     // Activity updates (status changes / remarks)
     Route::post('activities/{activity}/updates', [ActivityController::class, 'storeUpdate'])->name('activities.updates.store');
 

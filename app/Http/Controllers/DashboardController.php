@@ -3,68 +3,58 @@
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
+use App\Models\ActivityStatus;
 use App\Models\ActivityUpdate;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Return dashboard statistics as JSON for the frontend.
+     */
+    public function stats(Request $request)
     {
-        $date = $request->input('date', today()->toDateString());
-        $selectedDate = Carbon::parse($date);
+        $totalActivities = Activity::count();
 
-        // Get all activities with their updates for the selected date
-        $activities = Activity::with(['updates' => function($query) use ($selectedDate) {
-            $query->whereDate('created_at', $selectedDate)
-                  ->with('user')
-                  ->latest();
-        }])
-        ->active()
-        ->get()
-        ->map(function($activity) use ($selectedDate) {
-            $todayUpdates = $activity->updates;
-            $latestUpdate = $todayUpdates->first();
-            
+        // counts by status
+        $statuses = ActivityStatus::all()->map(function ($s) {
             return [
-                'id' => $activity->id,
-                'title' => $activity->title,
-                'category' => $activity->category,
-                'current_status' => $latestUpdate ? $latestUpdate->status : 'pending',
-                'updates' => $todayUpdates,
-                'update_count' => $todayUpdates->count(),
+                'id' => $s->id,
+                'name' => $s->name,
+                'label' => strtoupper(str_replace('_', ' ', $s->name)),
             ];
         });
 
-        // Summary statistics
-        $stats = [
-            'total_activities' => $activities->count(),
-            'done_count' => $activities->where('current_status', 'done')->count(),
-            'pending_count' => $activities->where('current_status', 'pending')->count(),
-            'total_updates' => ActivityUpdate::whereDate('created_at', $selectedDate)->count(),
-        ];
+        $countsByStatus = Activity::selectRaw('status_id, count(*) as count')
+            ->groupBy('status_id')
+            ->get()
+            ->mapWithKeys(function ($row) {
+                return [$row->status_id => $row->count];
+            });
 
-        return view('dashboard.index', compact('activities', 'selectedDate', 'stats'));
-    }
+        $totalUpdates = ActivityUpdate::count();
+        $updatesToday = ActivityUpdate::whereDate('created_at', now()->toDateString())->count();
 
-    public function handover(Request $request)
-    {
-        $date = $request->input('date', today()->toDateString());
-        $selectedDate = Carbon::parse($date);
-
-        // Get pending activities for handover
-        $pendingActivities = Activity::with(['updates' => function($query) use ($selectedDate) {
-            $query->whereDate('created_at', $selectedDate)
-                  ->where('status', 'pending')
-                  ->with('user')
-                  ->latest();
-        }])
-        ->active()
-        ->get()
-        ->filter(function($activity) {
-            return $activity->updates->isNotEmpty();
+        $recentUpdates = ActivityUpdate::with(['user', 'activity', 'status'])->latest()->limit(8)->get()->map(function ($u) {
+            return [
+                'id' => $u->id,
+                'remark' => $u->remark,
+                'created_at' => $u->created_at->toDateTimeString(),
+                'user' => $u->user ? ['id' => $u->user->id, 'name' => $u->user->name] : null,
+                'activity' => $u->activity ? ['id' => $u->activity->id, 'title' => $u->activity->title] : null,
+                'status' => $u->status ? ['id' => $u->status->id, 'name' => $u->status->name] : null,
+            ];
         });
 
-        return view('dashboard.handover', compact('pendingActivities', 'selectedDate'));
+        return response()->json([
+            'total_activities' => $totalActivities,
+            'counts_by_status' => $countsByStatus,
+            'statuses' => $statuses,
+            'total_updates' => $totalUpdates,
+            'updates_today' => $updatesToday,
+            'recent_updates' => $recentUpdates,
+        ]);
     }
 }
+
