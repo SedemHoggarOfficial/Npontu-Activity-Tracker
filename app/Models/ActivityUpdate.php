@@ -10,7 +10,6 @@ class ActivityUpdate extends Model
         'activity_id',
         'user_id',
         'status_id',
-        'is_active',
         'remark',
         'updated_at',
     ];

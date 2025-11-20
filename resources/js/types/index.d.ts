@@ -41,3 +41,34 @@ export interface User {
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
 }
+
+export interface Activity {
+  id: number;
+  title: string;
+  description?: string;
+  remark?: string;
+  status_id: number;
+  creator_name: string;
+  updated_at: string;
+}
+
+export interface ActivityStatus {
+  id: number;
+  name: string;
+}
+
+export interface Paginator<T> {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    links: {
+        first?: string;
+        last?: string;
+        prev?: string;
+        next?: string;
+    };
+}
+
+

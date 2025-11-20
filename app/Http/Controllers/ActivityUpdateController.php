@@ -8,58 +8,24 @@ use Illuminate\Http\Request;
 class ActivityUpdateController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        //
-    }
+        $validated = $request->validate([
+            'status_id' => 'required|integer|exists:activity_statuses,id',
+            'remarks' => 'required|string',
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(ActivityUpdate $activityUpdate)
-    {
-        //
-    }
+        $activityUpdate = ActivityUpdate::create([
+            'activity_id' => $activity->id,
+            'user_id' => Auth::id(),
+            'status_id' => $validated['status_id'],
+            'remarks' => $validated['remarks'],
+        ]);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ActivityUpdate $activityUpdate)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, ActivityUpdate $activityUpdate)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ActivityUpdate $activityUpdate)
-    {
-        //
+        return redirect()
+            ->back()
+            ->with('success', 'Status updated successfully!');
     }
 }

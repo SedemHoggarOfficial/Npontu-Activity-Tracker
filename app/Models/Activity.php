@@ -12,6 +12,7 @@ class Activity extends Model
     protected $fillable = [
         'title',
         'description',
+        'remark',
         'status_id',
         'is_active',
         'created_by',
@@ -37,8 +38,25 @@ class Activity extends Model
         return $this->hasOne(ActivityStatus::class);
     }
 
+    // Scopes
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
 
     // Helper functions
+    // public function getLatestUpdate()
+    // {
+    //     return $this->updates()->latest()->first();
+    // }
+
+    // public function getCurrentStatus()
+    // {
+    //     $latestUpdate = $this->getLatestUpdate();
+    //     return $latestUpdate ? $latestUpdate->status : 'pending';
+    // }
+
     public function getTodayUpdates()
     {
         return $this->updates()
