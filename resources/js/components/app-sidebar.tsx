@@ -27,6 +27,11 @@ const mainNavItems: NavItem[] = [
         href: '/activities',
         icon: ListTodo,
     },
+    {
+        title: "Today's Updates",
+        href: '/activities/todays-updates',
+        icon: ListTodo,
+    },
 ];
 
 const footerNavItems: NavItem[] = [

@@ -35,6 +35,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // JSON endpoint for activity updates (used by index modal)
     Route::get('activities/{activity}/updates-json', [ActivityController::class, 'updatesJson'])->name('activities.updates.json');
 
+    Route::get('activities/todays-updates', [ActivityController::class, 'todaysUpdates'])->name('activities.todays-updates');
+
     Route::resource('activities', ActivityController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
 });
 

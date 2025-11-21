@@ -354,4 +354,35 @@ class ActivityController extends Controller
     {
         //
     }
+
+    /**
+     * Show all today's updates for the sidebar view.
+     */
+    public function todaysUpdates(Request $request)
+    {
+        $date = today()->toDateString();
+        $query = ActivityUpdate::with(['activity.creator', 'user', 'status'])
+            ->whereDate('created_at', $date);
+
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->query('user_id'));
+        }
+        if ($request->filled('status_id')) {
+            $query->where('status_id', $request->query('status_id'));
+        }
+        $perPage = (int) $request->query('per_page', 10);
+        $page = (int) $request->query('page', 1);
+        $updates = $query->orderBy('created_at', 'asc')->paginate($perPage, ['*'], 'page', $page);
+        $users = \App\Models\User::select('id', 'name', 'email')->orderBy('name')->get();
+        $statuses = ActivityStatus::all();
+        return Inertia::render('Activities/todays-updates', [
+            'updates' => $updates,
+            'users' => $users,
+            'statuses' => $statuses,
+            'filters' => [
+                'user_id' => $request->query('user_id'),
+                'status_id' => $request->query('status_id'),
+            ],
+        ]);
+    }
 }
