@@ -3,6 +3,7 @@ import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import PasswordInput from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
@@ -24,21 +25,21 @@ export default function Login({
 }: LoginProps) {
     return (
         <AuthLayout
-            title="Log in to your account"
-            description="Enter your email and password below to log in"
+            title="Welcome Back!"
+            description="Sign in to continue to your dashboard."
         >
             <Head title="Log in" />
 
             <Form
                 {...store.form()}
                 resetOnSuccess={['password']}
-                className="flex flex-col gap-6"
+                className="flex flex-col gap-8 bg-white dark:bg-background rounded-xl shadow-lg p-8 w-full max-w-md mx-auto"
             >
                 {({ processing, errors }) => (
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="email" className="font-semibold">Email address</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -48,13 +49,14 @@ export default function Login({
                                     tabIndex={1}
                                     autoComplete="email"
                                     placeholder="email@example.com"
+                                    className="input input-bordered w-full"
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
                             <div className="grid gap-2">
                                 <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
+                                    <Label htmlFor="password" className="font-semibold">Password</Label>
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
@@ -65,16 +67,15 @@ export default function Login({
                                         </TextLink>
                                     )}
                                 </div>
-                                <Input
+                                <PasswordInput
                                     id="password"
-                                    type="password"
                                     name="password"
                                     required
                                     tabIndex={2}
                                     autoComplete="current-password"
                                     placeholder="Password"
+                                    error={errors.password}
                                 />
-                                <InputError message={errors.password} />
                             </div>
 
                             <div className="flex items-center space-x-3">
@@ -88,7 +89,7 @@ export default function Login({
 
                             <Button
                                 type="submit"
-                                className="mt-4 w-full"
+                                className="mt-4 w-full btn btn-primary text-base font-semibold"
                                 tabIndex={4}
                                 disabled={processing}
                                 data-test="login-button"
@@ -99,9 +100,9 @@ export default function Login({
                         </div>
 
                         {canRegister && (
-                            <div className="text-center text-sm text-muted-foreground">
+                            <div className="text-center text-sm text-muted-foreground mt-4">
                                 Don't have an account?{' '}
-                                <TextLink href={register()} tabIndex={5}>
+                                <TextLink href={register()} tabIndex={5} className="font-semibold text-primary">
                                     Sign up
                                 </TextLink>
                             </div>
