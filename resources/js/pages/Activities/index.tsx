@@ -66,6 +66,7 @@ export default function Index({ activities: initialActivities, activityStatuses 
   });
   const [listView, setListView] = useState(true); // Default to list
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const [formErrors, setFormErrors] = useState<Record<string, string | string[]>>({});
   const [updateFormErrors, setUpdateFormErrors] = useState<Record<string, string | string[]>>({});
   const [viewUpdatesOpen, setViewUpdatesOpen] = useState(false);
@@ -163,7 +164,6 @@ export default function Index({ activities: initialActivities, activityStatuses 
     };
 
     const previous = activities;
-    // Optimistically update the activity locally
     setActivities({ ...activities, data: activities.data.map(a => a.id === updatingActivity.id ? { ...a, status_id: updateForm.statusId, remark: updateForm.remark } : a) });
 
     const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
@@ -190,10 +190,8 @@ export default function Index({ activities: initialActivities, activityStatuses 
         throw new Error('Network response was not ok');
       }
 
-      // Success: parse returned update if needed (response ignored)
       await res.json();
 
-      // If View Updates modal is open, refresh the list to include the new update
       if (viewUpdatesOpen && viewActivity) {
         fetchViewUpdates(viewActivity.id, {
           start_date: viewFilters.start_date,
@@ -206,7 +204,8 @@ export default function Index({ activities: initialActivities, activityStatuses 
       }
 
       setUpdateModalOpen(false);
-
+      setSuccessMessage('Activity update saved successfully!');
+      setTimeout(() => setSuccessMessage(''), 2500);
     } catch (e) {
       console.error('Failed to save update', e);
       setActivities(previous);
@@ -243,6 +242,8 @@ export default function Index({ activities: initialActivities, activityStatuses 
         onFinish: () => {
           setModalOpen(false);
           setLoading(false);
+          setSuccessMessage('Activity updated successfully!');
+          setTimeout(() => setSuccessMessage(''), 2500);
         },
       });
     } else {
@@ -269,6 +270,8 @@ export default function Index({ activities: initialActivities, activityStatuses 
         onFinish: () => {
           setModalOpen(false);
           setLoading(false);
+          setSuccessMessage('Activity added successfully!');
+          setTimeout(() => setSuccessMessage(''), 2500);
         },
       });
     }
@@ -304,6 +307,11 @@ export default function Index({ activities: initialActivities, activityStatuses 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Activities" />
+      {successMessage && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded shadow-lg animate-fade-in">
+          {successMessage}
+        </div>
+      )}
       <div className="flex flex-col gap-4 p-4 h-[85vh]">
 
         {/* Controls */}
@@ -519,10 +527,17 @@ export default function Index({ activities: initialActivities, activityStatuses 
             {formErrors.status_id && <div className="text-sm text-destructive">{Array.isArray(formErrors.status_id) ? formErrors.status_id.join(' ') : formErrors.status_id}</div>}
           </div>
           <DialogFooter className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setModalOpen(false)}>
+            <Button variant="outline" onClick={() => setModalOpen(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>{editingActivity ? 'Update' : 'Create'}</Button>
+            <Button onClick={handleSave} disabled={loading}>
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  Saving...
+                </span>
+              ) : (editingActivity ? 'Update' : 'Create')}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -554,10 +569,17 @@ export default function Index({ activities: initialActivities, activityStatuses 
             {updateFormErrors.remark && <div className="text-sm text-destructive">{Array.isArray(updateFormErrors.remark) ? updateFormErrors.remark.join(' ') : updateFormErrors.remark}</div>}
           </div>
           <DialogFooter className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setUpdateModalOpen(false)}>
+            <Button variant="outline" onClick={() => setUpdateModalOpen(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button onClick={handleUpdateSave}>Save Update</Button>
+            <Button onClick={handleUpdateSave} disabled={loading}>
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  Saving...
+                </span>
+              ) : 'Save Update'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
