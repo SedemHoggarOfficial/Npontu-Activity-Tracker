@@ -20,13 +20,19 @@ class ActivityController extends Controller
     public function index(Request $request)
     {
         $activityStatuses = ActivityStatus::all();
+        $users = \App\Models\User::select('id', 'name', 'email')->orderBy('name')->get();
         $activities = Activity::getPaginated($request);
 
         return Inertia::render('Activities/index', [
             'activities' => $activities,
             'activityStatuses' => $activityStatuses,
+            'users' => $users,
             'filters' => [
                 'search' => $request->query('search'),
+                'start_date' => $request->query('start_date'),
+                'end_date' => $request->query('end_date'),
+                'user_id' => $request->query('user_id'),
+                'status_id' => $request->query('status_id'),
             ],
         ]);
     }
@@ -104,103 +110,6 @@ class ActivityController extends Controller
         return redirect()->back()->with('success', 'Activity update saved');
     }
 
-    public function daily(Request $request)
-    {
-        $date = $request->query('date', today()->toDateString());
-
-        $parsed = Carbon::parse($date)->toDateString();
-
-        $query = ActivityUpdate::with(['activity.creator', 'user', 'status'])
-            ->whereDate('created_at', $parsed);
-
-        // Optional filters
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->query('user_id'));
-        }
-
-        if ($request->filled('status_id')) {
-            $query->where('status_id', $request->query('status_id'));
-        }
-
-        if ($request->filled('activity_id')) {
-            $query->where('activity_id', $request->query('activity_id'));
-        }
-
-        $perPage = (int) $request->query('per_page', 10);
-        $updates = $query->orderBy('created_at', 'asc')->paginate($perPage);
-
-        // For filters UI
-        $users = \App\Models\User::select('id', 'name', 'email')->orderBy('name')->get();
-        $statuses = ActivityStatus::all();
-        $activities = Activity::select('id', 'title')->active()->orderBy('title')->get();
-
-        return Inertia::render('Activities/daily', [
-            'date' => $parsed,
-            'updates' => $updates,
-            'filters' => [
-                'user_id' => $request->query('user_id'),
-                'status_id' => $request->query('status_id'),
-                'activity_id' => $request->query('activity_id'),
-            ],
-            'users' => $users,
-            'statuses' => $statuses,
-            'activities' => $activities,
-        ]);
-    }
-
-    /**
-     * Reporting view: query activity histories by date range.
-     */
-    public function report(Request $request)
-    {
-        $validated = $request->validate([
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-        ]);
-
-        $start = Carbon::parse($validated['start_date'])->startOfDay();
-        $end = Carbon::parse($validated['end_date'])->endOfDay();
-
-        $query = ActivityUpdate::with(['activity.creator', 'user', 'status'])
-            ->whereBetween('created_at', [$start, $end]);
-
-        // Optional filters
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->query('user_id'));
-        }
-
-        if ($request->filled('status_id')) {
-            $query->where('status_id', $request->query('status_id'));
-        }
-
-        if ($request->filled('activity_id')) {
-            $query->where('activity_id', $request->query('activity_id'));
-        }
-
-        // Support pagination for the modal UI. Honor per_page and page query params.
-        $perPage = (int) $request->query('per_page', 10);
-        $page = (int) $request->query('page', 1);
-        $updates = $query->orderBy('created_at', 'asc')->paginate($perPage, ['*'], 'page', $page);
-
-        // For filters UI
-        $users = \App\Models\User::select('id', 'name', 'email')->orderBy('name')->get();
-        $statuses = ActivityStatus::all();
-        $activities = Activity::select('id', 'title')->active()->orderBy('title')->get();
-
-        return Inertia::render('Activities/report', [
-            'start_date' => $start->toDateString(),
-            'end_date' => $end->toDateString(),
-            'updates' => $updates,
-            'filters' => [
-                'user_id' => $request->query('user_id'),
-                'status_id' => $request->query('status_id'),
-                'activity_id' => $request->query('activity_id'),
-            ],
-            'users' => $users,
-            'statuses' => $statuses,
-            'activities' => $activities,
-        ]);
-    }
 
     /**
      * Fullscreen details for a single activity with filters (date or range, user, status).

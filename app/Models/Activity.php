@@ -84,7 +84,20 @@ class Activity extends Model
         if ($request->filled('search')) {
             $query->search($request->query('search'));
         }
+        $start = $request->query('start_date');
+        $end = $request->query('end_date');
+        if (!empty($start) && !empty($end)) {
+            $startDateTime = $start . ' 00:00:00';
+            $endDateTime = $end . ' 23:59:59';
+            $query->whereBetween('created_at', [$startDateTime, $endDateTime]);
+        }
+        if ($request->filled('user_id')) {
+            $query->where('created_by', $request->query('user_id'));
+        }
+        if ($request->filled('status_id')) {
+            $query->where('status_id', $request->query('status_id'));
+        }
 
-        return $query->latestFirst()->paginate($perPage)->appends($request->only('search'));
+        return $query->latestFirst()->paginate($perPage)->appends($request->only(['search','start_date','end_date','user_id','status_id']));
     }
 }

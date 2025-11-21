@@ -22,7 +22,7 @@ interface PageProps {
   updates: UpdatesPagination;
   users: User[];
   statuses: Status[];
-  filters: { user_id?: string; status_id?: string; };
+  filters: { user_id?: string; status_id?: string; start_date?: string; end_date?: string };
 }
 
 function formatReadableDate(dateString: string) {
@@ -40,10 +40,10 @@ function formatReadableDate(dateString: string) {
 export default function TodaysUpdates() {
   const { updates, users, statuses, filters } = (usePage().props as unknown) as PageProps;
   const [localFilters, setLocalFilters] = useState({
-    user_id: filters.user_id || '',
-    status_id: filters.status_id || '',
-    start_date: '',
-    end_date: '',
+    user_id: filters?.user_id || '',
+    status_id: filters?.status_id || '',
+    start_date: filters?.start_date || '',
+    end_date: filters?.end_date || '',
     page: updates.current_page || 1,
   });
 

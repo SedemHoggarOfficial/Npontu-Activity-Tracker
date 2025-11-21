@@ -23,11 +23,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Activity updates (status changes / remarks)
     Route::post('activities/{activity}/updates', [ActivityController::class, 'storeUpdate'])->name('activities.updates.store');
 
-    // Daily view of updates
-    Route::get('activities/daily', [ActivityController::class, 'daily'])->name('activities.daily');
-
-    // Reporting: date range
-    Route::get('activities/report', [ActivityController::class, 'report'])->name('activities.report');
+    // (Removed: Daily view and Reporting routes)
 
     // Fullscreen details for an activity (filtered by date/range/user/status)
     Route::get('activities/{activity}/details', [ActivityController::class, 'dailyDetails'])->name('activities.details');

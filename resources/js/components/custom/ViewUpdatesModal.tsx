@@ -67,8 +67,8 @@ export default function ViewUpdatesModal({
         }
       }}
     >
-      <DialogContent className="sm:max-w-3xl w-full max-h-[90vh] flex flex-col p-0">
-        <DialogHeader className="flex justify-between items-center px-6 py-4 border-b">
+      <DialogContent className="sm:max-w-3xl w-full h-screen max-h-screen flex flex-col p-0 rounded-none">
+        <DialogHeader className="flex justify-between items-center px-6 py-4 border-none">
           <div className="flex justify-between items-center w-full">
             <div className="flex flex-col">
               <DialogTitle className="text-2xl font-extrabold text-blue-700 tracking-tight mb-1">Activity Update</DialogTitle>

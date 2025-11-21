@@ -14,6 +14,14 @@ import { Activity, ActivityStatus, ActivityUpdate, Paginator } from '@/types';
 interface IndexProps {
   activities: Paginator<Activity>;
   activityStatuses: ActivityStatus[];
+  users: { id: number; name: string; email?: string }[];
+  filters?: {
+    search?: string;
+    start_date?: string;
+    end_date?: string;
+    user_id?: string | number;
+    status_id?: string | number;
+  };
 }
 
 interface ActivityFormData {
@@ -44,10 +52,9 @@ const formatStatus = (statusName?: string) =>
 
 // ...existing code...
 
-export default function Index({ activities: initialActivities, activityStatuses }: IndexProps) {
-  console.log('activity:', initialActivities);
+export default function Index({ activities: initialActivities, activityStatuses, users, filters }: IndexProps) {
   const [activities, setActivities] = useState(initialActivities);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(filters?.search || '');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [updatingActivity, setUpdatingActivity] = useState<Activity | null>(null);
@@ -64,7 +71,7 @@ export default function Index({ activities: initialActivities, activityStatuses 
   const [viewUpdatesOpen, setViewUpdatesOpen] = useState(false);
   const [viewActivity, setViewActivity] = useState<Activity | null>(null);
   const [viewUpdates, setViewUpdates] = useState<ActivityUpdate[]>([]);
-  const [viewUsers, setViewUsers] = useState<{id:number;name:string;email?:string}[]>([]);
+  // Use users from props for filter dropdown
   const [viewStatuses, setViewStatuses] = useState<ActivityStatus[]>([]);
   const [viewFilters, setViewFilters] = useState<{date?:string; start_date?:string; end_date?:string; user_id?: number | string | undefined; status_id?: number | string | undefined}>({ start_date: new Date().toISOString().slice(0,10), end_date: new Date().toISOString().slice(0,10) });
   const [viewLoading, setViewLoading] = useState(false);
@@ -113,7 +120,7 @@ export default function Index({ activities: initialActivities, activityStatuses 
     const today = new Date().toISOString().slice(0,10);
     setViewFilters({ start_date: today, end_date: today, user_id: '', status_id: '' });
     setViewUpdates([]);
-    setViewUsers([]);
+    // setViewUsers([]); // No longer needed, users come from props
     setViewStatuses([]);
     setViewUpdatesOpen(true);
     // fetch first page of range
@@ -137,7 +144,7 @@ export default function Index({ activities: initialActivities, activityStatuses 
         setViewUpdates(data.updates || []);
         setViewPagination({});
       }
-      setViewUsers(data.users || []);
+      // setViewUsers(data.users || []); // No longer needed, users come from props
       setViewStatuses(data.statuses || []);
     } catch (e) {
       console.error('Failed to load updates', e);
@@ -306,21 +313,91 @@ export default function Index({ activities: initialActivities, activityStatuses 
       )}
       <div className="flex flex-col gap-4 p-4 h-[85vh]">
 
-        {/* Controls */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <Input
-            placeholder="Search activities..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1"
-          />
-          <div className="flex gap-2">
-            <Button onClick={() => openModal()} className="cursor-pointer">Add Activity</Button>
-            <Button variant="outline" onClick={() => router.visit('/activities/daily')} className="cursor-pointer">Daily</Button>
-            <Button variant="outline" onClick={() => router.visit('/activities/report')} className="cursor-pointer">Report</Button>
-            <Button variant="outline" onClick={() => setListView(!listView)} className="cursor-pointer">
-              {listView ? 'Grid View' : 'List View'}
-            </Button>
+        {/* Controls + Filters */}
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <Input
+              placeholder="Search activities..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1"
+            />
+            <div className="flex gap-2">
+              <Button onClick={() => openModal()} className="cursor-pointer">Add Activity</Button>
+              <Button variant="outline" onClick={() => setListView(!listView)} className="cursor-pointer">
+                {listView ? 'Grid View' : 'List View'}
+              </Button>
+            </div>
+          </div>
+          {/* Filters Row */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 w-full">
+            <div className="flex flex-col">
+              <label className="text-[11px] font-semibold mb-1 text-gray-600">From</label>
+              <input
+                type="date"
+                className="border border-gray-300 rounded-md px-2 py-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
+                value={viewFilters.start_date ?? ''}
+                onChange={e => setViewFilters({ ...viewFilters, start_date: e.target.value })}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-[11px] font-semibold mb-1 text-gray-600">To</label>
+              <input
+                type="date"
+                className="border border-gray-300 rounded-md px-2 py-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
+                value={viewFilters.end_date ?? ''}
+                onChange={e => setViewFilters({ ...viewFilters, end_date: e.target.value })}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-[11px] font-semibold mb-1 text-gray-600">User</label>
+              <select
+                className="border border-gray-300 rounded-md px-2 py-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
+                value={viewFilters.user_id ?? ''}
+                onChange={e => setViewFilters({ ...viewFilters, user_id: e.target.value || '' })}
+              >
+                <option value="" className="text-gray-500 bg-gray-50 text-[12px]">All</option>
+                {users.map((u) => (
+                  <option key={u.id} value={u.id} className="text-gray-700 bg-white text-[12px] hover:bg-blue-50">{u.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col">
+              <label className="text-[11px] font-semibold mb-1 text-gray-600">Status</label>
+              <select
+                className="border border-gray-300 rounded-md px-2 py-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
+                value={viewFilters.status_id ?? ''}
+                onChange={e => setViewFilters({ ...viewFilters, status_id: e.target.value || '' })}
+              >
+                <option value="" className="text-gray-500 bg-gray-50 text-[12px]">All</option>
+                {activityStatuses.map((s) => (
+                  <option key={s.id} value={s.id} className="text-gray-700 bg-white text-[12px] hover:bg-blue-50">{formatStatus(s.name)}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col justify-end">
+              <Button
+                size="sm"
+                className="px-6 cursor-pointer"
+                onClick={() => {
+                  setLoading(true);
+                  router.visit('/activities', {
+                    method: 'get',
+                    data: {
+                      page: 1,
+                      start_date: viewFilters.start_date,
+                      end_date: viewFilters.end_date,
+                      user_id: viewFilters.user_id,
+                      status_id: viewFilters.status_id,
+                    },
+                    preserveState: false,
+                    onFinish: () => setLoading(false),
+                  });
+                }}
+              >
+                Apply
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -399,7 +476,7 @@ export default function Index({ activities: initialActivities, activityStatuses 
         viewActivity={viewActivity}
         viewFilters={viewFilters}
         setViewFilters={setViewFilters}
-        viewUsers={viewUsers}
+        viewUsers={users}
         viewStatuses={viewStatuses}
         viewLoading={viewLoading}
         viewUpdates={viewUpdates}
