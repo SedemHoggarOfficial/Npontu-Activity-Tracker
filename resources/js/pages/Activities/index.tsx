@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
@@ -54,6 +54,10 @@ const formatStatus = (statusName?: string) =>
 
 export default function Index({ activities: initialActivities, activityStatuses, users, filters }: IndexProps) {
   const [activities, setActivities] = useState(initialActivities);
+  // Listen for activities prop change after reload
+  React.useEffect(() => {
+    setActivities(initialActivities);
+  }, [initialActivities]);
   const [search, setSearch] = useState(filters?.search || '');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
@@ -162,9 +166,6 @@ export default function Index({ activities: initialActivities, activityStatuses,
       remark: updateForm.remark,
     };
 
-    const previous = activities;
-    setActivities({ ...activities, data: activities.data.map(a => a.id === updatingActivity.id ? { ...a, status_id: updateForm.statusId, remark: updateForm.remark } : a) });
-
     const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
     try {
@@ -181,7 +182,6 @@ export default function Index({ activities: initialActivities, activityStatuses,
       if (res.status === 422) {
         const data = await res.json();
         setUpdateFormErrors((data.errors ?? data) as unknown as Record<string, string | string[]>);
-        setActivities(previous);
         return;
       }
 
@@ -189,25 +189,14 @@ export default function Index({ activities: initialActivities, activityStatuses,
         throw new Error('Network response was not ok');
       }
 
-      await res.json();
-
-      if (viewUpdatesOpen && viewActivity) {
-        fetchViewUpdates(viewActivity.id, {
-          start_date: viewFilters.start_date,
-          end_date: viewFilters.end_date,
-          user_id: viewFilters.user_id ?? undefined,
-          status_id: viewFilters.status_id ?? undefined,
-          per_page: viewPagination.per_page || 10,
-          page: 1,
-        });
-      }
-
-      setUpdateModalOpen(false);
-      setSuccessMessage('Activity update saved successfully!');
-      setTimeout(() => setSuccessMessage(''), 2500);
+      // Refetch activities from backend to update UI
+      router.reload({ only: ['activities'], onFinish: () => {
+        setUpdateModalOpen(false);
+        setSuccessMessage('Activity update saved successfully!');
+        setTimeout(() => setSuccessMessage(''), 2500);
+      }});
     } catch (e) {
       console.error('Failed to save update', e);
-      setActivities(previous);
     } finally {
       setLoading(false);
     }

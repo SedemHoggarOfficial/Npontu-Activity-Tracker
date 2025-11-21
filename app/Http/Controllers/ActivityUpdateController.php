@@ -10,19 +10,24 @@ class ActivityUpdateController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function storeUpdate(Request $request, $activityId)
     {
         $validated = $request->validate([
             'status_id' => 'required|integer|exists:activity_statuses,id',
-            'remarks' => 'required|string',
+            'remark' => 'nullable|string',
         ]);
 
-        $activityUpdate = ActivityUpdate::create([
-            'activity_id' => $activity->id,
-            'user_id' => Auth::id(),
+        $activity = \App\Models\Activity::findOrFail($activityId);
+        $update = \App\Models\ActivityUpdate::create([
+            'activity_id' => $activityId,
+            'user_id' => $request->user()->id,
             'status_id' => $validated['status_id'],
-            'remarks' => $validated['remarks'],
+            'remark' => $validated['remark'] ?? null,
         ]);
+
+        // Update the activity current status
+        $activity->status_id = $validated['status_id'];
+        $activity->save();
 
         return redirect()
             ->back()

@@ -81,89 +81,9 @@ class ActivityController extends Controller
         return view('activities.show', compact('activity', 'updates'));
     }
 
-    /**
-     * Store a status update for an activity.
-     */
-    public function storeUpdate(Request $request, Activity $activity)
-    {
-        $validated = $request->validate([
-            'status_id' => 'required|integer|exists:activity_statuses,id',
-            'remark' => 'nullable|string',
-        ]);
-
-        $update = ActivityUpdate::create([
-            'activity_id' => $activity->id,
-            'user_id' => Auth::id(),
-            'status_id' => $validated['status_id'],
-            'remark' => $validated['remark'] ?? null,
-        ]);
-
-        // Update the activity current status
-        $activity->status_id = $validated['status_id'];
-        $activity->save();
-
-        // Return back with a success message for Inertia or regular requests
-        if ($request->wantsJson() || $request->isJson()) {
-            return response()->json(['message' => 'Update saved', 'update' => $update], 201);
-        }
-
-        return redirect()->back()->with('success', 'Activity update saved');
-    }
 
 
-    /**
-     * Fullscreen details for a single activity with filters (date or range, user, status).
-     */
-    public function dailyDetails(Request $request, Activity $activity)
-    {
-        // If date provided, use it; otherwise allow start_date/end_date range, default today
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $start = Carbon::parse($request->query('start_date'))->startOfDay();
-            $end = Carbon::parse($request->query('end_date'))->endOfDay();
-            $query = $activity->updates()->with(['user', 'status'])->whereBetween('created_at', [$start, $end]);
-            $rangeLabel = $start->toDateString() . ' → ' . $end->toDateString();
-        } else {
-            $date = $request->query('date', today()->toDateString());
-            $parsed = Carbon::parse($date)->toDateString();
-            $query = $activity->updates()->with(['user', 'status'])->whereDate('created_at', $parsed);
-            $rangeLabel = $parsed;
-        }
 
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->query('user_id'));
-        }
-
-        if ($request->filled('status_id')) {
-            $query->where('status_id', $request->query('status_id'));
-        }
-
-        // $updates = $query->orderBy('created_at', 'asc')->get();
-        $perPage = (int) $request->query('per_page', 10);
-        $page = (int) $request->query('page', 1);
-
-        $updates = $query
-            ->orderBy('created_at', 'asc')
-            ->paginate($perPage, ['*'], 'page', $page);
-
-        // For filters UI
-        $users = \App\Models\User::select('id', 'name', 'email')->orderBy('name')->get();
-        $statuses = ActivityStatus::all();
-
-        return Inertia::render('Activities/details', [
-            'activity' => $activity->load('creator'),
-            'updates' => $updates,
-            'rangeLabel' => $rangeLabel,
-            'filters' => [
-                'user_id' => $request->query('user_id'),
-                'status_id' => $request->query('status_id'),
-                'start_date' => $request->query('start_date'),
-                'end_date' => $request->query('end_date'),
-                'date' => $request->query('date'),
-            ],
-            'users' => $users,
-            'statuses' => $statuses,
-        ]);
-    }
 
     public function updatesJson(Request $request, Activity $activity)
     {
@@ -244,34 +164,4 @@ class ActivityController extends Controller
         //
     }
 
-    /**
-     * Show all today's updates for the sidebar view.
-     */
-    public function todaysUpdates(Request $request)
-    {
-        $date = today()->toDateString();
-        $query = ActivityUpdate::with(['activity.creator', 'user', 'status'])
-            ->whereDate('created_at', $date);
-
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->query('user_id'));
-        }
-        if ($request->filled('status_id')) {
-            $query->where('status_id', $request->query('status_id'));
-        }
-        $perPage = (int) $request->query('per_page', 10);
-        $page = (int) $request->query('page', 1);
-        $updates = $query->orderBy('created_at', 'asc')->paginate($perPage, ['*'], 'page', $page);
-        $users = \App\Models\User::select('id', 'name', 'email')->orderBy('name')->get();
-        $statuses = ActivityStatus::all();
-        return Inertia::render('Activities/todays-updates', [
-            'updates' => $updates,
-            'users' => $users,
-            'statuses' => $statuses,
-            'filters' => [
-                'user_id' => $request->query('user_id'),
-                'status_id' => $request->query('status_id'),
-            ],
-        ]);
-    }
 }

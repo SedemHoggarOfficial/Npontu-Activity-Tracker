@@ -20,19 +20,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard JSON endpoint for stats
     Route::get('dashboard-data', [\App\Http\Controllers\DashboardController::class, 'stats'])->name('dashboard.data');
 
-    // Activity updates (status changes / remarks)
-    Route::post('activities/{activity}/updates', [ActivityController::class, 'storeUpdate'])->name('activities.updates.store');
-
-    // (Removed: Daily view and Reporting routes)
-
     // Fullscreen details for an activity (filtered by date/range/user/status)
     Route::get('activities/{activity}/details', [ActivityController::class, 'dailyDetails'])->name('activities.details');
-    // JSON endpoint for activity updates (used by View Updates modal)
-    Route::get('activities/{activity}/updates-json', [ActivityController::class, 'updatesJson'])->name('activities.updates.json');
-    // JSON endpoint for activity updates (used by index modal)
-    Route::get('activities/{activity}/updates-json', [ActivityController::class, 'updatesJson'])->name('activities.updates.json');
 
+    // Activity updates (status changes / remarks, today's updates, and JSON endpoints)
     Route::get('activities/todays-updates', [ActivityUpdateController::class, 'todaysUpdates'])->name('activities.todays-updates');
+    Route::post('activities/{activity}/updates', [ActivityUpdateController::class, 'storeUpdate'])->name('activities.updates.store');
+    Route::get('activities/{activity}/updates-json', [ActivityUpdateController::class, 'updatesJson'])->name('activities.updates.json');
 
     Route::resource('activities', ActivityController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
 });
