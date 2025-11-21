@@ -15,19 +15,19 @@ Note: The project used React Starter kit
 Here are some screenshots of the application in action:
 
 **Welcome Page**
-(https://github.com/SedemHoggarOfficial/Npontu-Activity-Tracker/screenshots/welcome.png)
+<img src="screenshots/welcome.png" width="250">
 
 **Login Page**
-(https://github.com/SedemHoggarOfficial/Npontu-Activity-Tracker/screenshots/login.png)
+<img src="screenshots/login.png" width="250">
 
 **Main Dashboard**
-(https://github.com/SedemHoggarOfficial/Npontu-Activity-Tracker/screenshots/main-dashboard.png)
+<img src="screenshots/main-dashboard.png" width="250">
 
 **All Activities Page**
-(https://github.com/SedemHoggarOfficial/Npontu-Activity-Tracker/screenshots/all-activities.png)
+<img src="screenshots/activities-main.png" width="250">
 
 **Update Activity Modal**
-(https://github.com/SedemHoggarOfficial/Npontu-Activity-Tracker/screenshots/activity-updates.png)
+<img src="screenshots/activity-updates.png" width="250">
 
 
 
@@ -96,6 +96,12 @@ Make sure you have the following software installed on your machine:
     In one terminal, run the PHP server:
     ```sh
     php artisan serve
+    ```
+    ```sh
+    npm run dev
+    ```
+    ```sh
+    composer run dev
     ```
     The application will be available at `http://127.0.0.1:8000`.
 
