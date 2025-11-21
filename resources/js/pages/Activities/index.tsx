@@ -153,7 +153,7 @@ export default function Index({ activities: initialActivities, activityStatuses 
     }
   };
 
-  const handleUpdateSave = () => {
+  const handleUpdateSave = async () => {
     if (!updatingActivity) return;
     setLoading(true);
     setUpdateFormErrors({});
@@ -166,17 +166,53 @@ export default function Index({ activities: initialActivities, activityStatuses 
     // Optimistically update the activity locally
     setActivities({ ...activities, data: activities.data.map(a => a.id === updatingActivity.id ? { ...a, status_id: updateForm.statusId, remark: updateForm.remark } : a) });
 
-    router.post(`/activities/${updatingActivity.id}/updates`, payload, {
-      preserveState: true,
-      onError: (errors) => {
-        setUpdateFormErrors(errors as unknown as Record<string, string | string[]>);
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+    try {
+      const res = await fetch(`/activities/${updatingActivity.id}/updates`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrf,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.status === 422) {
+        const data = await res.json();
+        setUpdateFormErrors((data.errors ?? data) as unknown as Record<string, string | string[]>);
         setActivities(previous);
-      },
-      onFinish: () => {
-        setUpdateModalOpen(false);
-        setLoading(false);
-      },
-    });
+        return;
+      }
+
+      if (!res.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      // Success: parse returned update if needed (response ignored)
+      await res.json();
+
+      // If View Updates modal is open, refresh the list to include the new update
+      if (viewUpdatesOpen && viewActivity) {
+        fetchViewUpdates(viewActivity.id, {
+          start_date: viewFilters.start_date,
+          end_date: viewFilters.end_date,
+          user_id: viewFilters.user_id ?? undefined,
+          status_id: viewFilters.status_id ?? undefined,
+          per_page: viewPagination.per_page || 10,
+          page: 1,
+        });
+      }
+
+      setUpdateModalOpen(false);
+
+    } catch (e) {
+      console.error('Failed to save update', e);
+      setActivities(previous);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleFormChange = (field: keyof ActivityFormData, value: string | number) => {
