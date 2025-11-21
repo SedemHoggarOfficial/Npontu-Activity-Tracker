@@ -254,7 +254,7 @@ export default function Index({ activities: initialActivities, activityStatuses 
       setActivities({ ...activities, data: [tempActivity, ...activities.data] });
 
       router.post('/activities', payload, {
-        preserveState: true,
+        preserveState: false,
         onError: (errors) => {
           setFormErrors(errors as unknown as Record<string, string | string[]>);
           setActivities(previous);
