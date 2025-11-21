@@ -8,24 +8,28 @@ A simple web application built with the Laravel framework to help users track th
 
 This project provides a platform for users to log and manage their daily tasks or activities. Each activity can have a title, a detailed description, remarks, and a status. This helps in keeping a structured record of work done over time. Any time an update is made to the activities, a record is kept of that update.
 
+Note: The project used React Starter kit
+
 ## Screenshots
 
 Here are some screenshots of the application in action:
 
-**Home Page**
-![Home Page](./screenshots/home.png)
+**Welcome Page**
+(https://github.com/SedemHoggarOfficial/Npontu-Activity-Tracker/screenshots/welcome.png)
+
+**Login Page**
+(https://github.com/SedemHoggarOfficial/Npontu-Activity-Tracker/screenshots/login.png)
+
+**Main Dashboard**
+(https://github.com/SedemHoggarOfficial/Npontu-Activity-Tracker/screenshots/main-dashboard.png)
 
 **All Activities Page**
-![All Activities Page](./screenshots/all-activities.png)
+(https://github.com/SedemHoggarOfficial/Npontu-Activity-Tracker/screenshots/all-activities.png)
 
-**Create Activity Page**
-![Create Activity Page](./screenshots/create-activity.png)
+**Update Activity Modal**
+(https://github.com/SedemHoggarOfficial/Npontu-Activity-Tracker/screenshots/activity-updates.png)
 
-**Activity Details Page**
-![Activity Details Page](./screenshots/activity-details.png)
 
-**Edit Activity Page**
-![Edit Activity Page](./screenshots/edit-activity.png)
 
 ### Built With
 
@@ -33,6 +37,7 @@ Here are some screenshots of the application in action:
 *   [PHP](https://www.php.net/)
 *   [Composer](https://getcomposer.org/)
 *   [Node.js](https://nodejs.org/)
+*   [React.js](https://react.dev/)
 *   A SQL database (e.g., MySQL, PostgreSQL)
 
 ## Getting Started
