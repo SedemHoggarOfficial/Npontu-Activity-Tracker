@@ -10,23 +10,14 @@ This project provides a platform for users to log and manage their daily tasks o
 
 Note: The project used React Starter kit
 
-## Screenshots
+## Sample UI Screenshots
 
 Here are some screenshots of the application in action:
 
-**Welcome Page**
 <img src="screenshots/welcome.png" width="250">
-
-**Login Page**
 <img src="screenshots/login.png" width="250">
-
-**Main Dashboard**
 <img src="screenshots/main-dashboard.png" width="250">
-
-**All Activities Page**
 <img src="screenshots/activities-main.png" width="250">
-
-**Update Activity Modal**
 <img src="screenshots/activity-updates.png" width="250">
 
 
