@@ -52,8 +52,21 @@ const getBadgeClasses = (statusName?: string) => {
 const formatStatus = (statusName?: string) =>
   statusName ? statusName.replace(/_/g, ' ').toUpperCase() : 'UNKNOWN';
 
+function formatReadableDate(dateString: string) {
+  const date = new Date(dateString);
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const dayName = days[date.getDay()];
+  const day = date.getDate();
+  const month = date.toLocaleString('default', { month: 'long' });
+  const year = date.getFullYear();
+  // Ordinal suffix
+  const j = day % 10, k = day % 100;
+  const suffix = (j === 1 && k !== 11) ? "st" : (j === 2 && k !== 12) ? "nd" : (j === 3 && k !== 13) ? "rd" : "th";
+  return `${dayName} ${day}${suffix} ${month} ${year}`;
+}
+
 export default function Index({ activities: initialActivities, activityStatuses }: IndexProps) {
-  // console.log('updates:', data.updates);
+  console.log('activity:', initialActivities);
   const [activities, setActivities] = useState(initialActivities);
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
@@ -323,10 +336,10 @@ export default function Index({ activities: initialActivities, activityStatuses 
             className="flex-1"
           />
           <div className="flex gap-2">
-            <Button onClick={() => openModal()}>Add Activity</Button>
-            <Button variant="outline" onClick={() => router.visit('/activities/daily')}>Daily</Button>
-            <Button variant="outline" onClick={() => router.visit('/activities/report')}>Report</Button>
-            <Button variant="outline" onClick={() => setListView(!listView)}>
+            <Button onClick={() => openModal()} className="cursor-pointer">Add Activity</Button>
+            <Button variant="outline" onClick={() => router.visit('/activities/daily')} className="cursor-pointer">Daily</Button>
+            <Button variant="outline" onClick={() => router.visit('/activities/report')} className="cursor-pointer">Report</Button>
+            <Button variant="outline" onClick={() => setListView(!listView)} className="cursor-pointer">
               {listView ? 'Grid View' : 'List View'}
             </Button>
           </div>
@@ -343,45 +356,46 @@ export default function Index({ activities: initialActivities, activityStatuses 
             <div className="flex flex-col gap-2">
               {displayedActivities.length > 0 ? (
                 displayedActivities.map(activity => (
-                  <div key={activity.id} className="flex justify-between items-center border rounded p-2 hover:shadow transition">
-                    <div className="flex flex-col">
-                      <span className="font-semibold">{activity.title}</span>
-                      <span className="text-sm text-muted-foreground">{activity.description}</span>
+                  <div key={activity.id} className="flex justify-between items-center border rounded-lg p-2 bg-white shadow-sm hover:shadow-md transition-all text-xs">
+                    <div className="flex flex-col gap-1 flex-1">
+                      <span className="font-semibold text-sm text-gray-800">{activity.title}</span>
+                      {activity.remark && (
+                        <span className="text-[11px] text-blue-500 italic">{activity.remark}</span>
+                      )}
+                      <span className="text-[11px] text-gray-500">Created by: {activity.creator.name}</span>
+                      <span className="text-[11px] text-gray-400">{formatReadableDate(activity.updated_at)}</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 ml-2">
                       <Badge className={getBadgeClasses(getStatus(activity.status_id)?.name)}>
                         {formatStatus(getStatus(activity.status_id)?.name)}
                       </Badge>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button size="icon" variant="ghost" aria-label="View Updates" onClick={() => openViewUpdates(activity)}>
+                          <Button size="icon" variant="ghost" aria-label="View Updates" onClick={() => openViewUpdates(activity)} className="cursor-pointer">
                             <Eye className="w-4 h-4" />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>View Updates</TooltipContent>
                       </Tooltip>
-
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button size="icon" variant="outline" aria-label="Edit Activity" onClick={() => openModal(activity)}>
+                          <Button size="icon" variant="outline" aria-label="Edit Activity" onClick={() => openModal(activity)} className="cursor-pointer">
                             <Edit className="w-4 h-4" />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>Edit</TooltipContent>
                       </Tooltip>
-
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button size="icon" variant="secondary" aria-label="Update Status" onClick={() => openUpdateModal(activity)}>
+                          <Button size="icon" variant="secondary" aria-label="Update Status" onClick={() => openUpdateModal(activity)} className="cursor-pointer">
                             <RefreshCw className="w-4 h-4" />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>Update Status</TooltipContent>
                       </Tooltip>
-
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button size="icon" variant="destructive" aria-label="Delete Activity" onClick={() => handleDelete(activity.id)}>
+                          <Button size="icon" variant="destructive" aria-label="Delete Activity" onClick={() => handleDelete(activity.id)} className="cursor-pointer">
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </TooltipTrigger>
@@ -420,7 +434,7 @@ export default function Index({ activities: initialActivities, activityStatuses 
                       <div className="flex gap-2 mt-2">
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button size="icon" variant="outline" aria-label="Edit Activity" onClick={() => openModal(activity)}>
+                            <Button size="icon" variant="outline" aria-label="Edit Activity" onClick={() => openModal(activity)} className="cursor-pointer">
                               <Edit className="w-4 h-4" />
                             </Button>
                           </TooltipTrigger>
@@ -429,7 +443,7 @@ export default function Index({ activities: initialActivities, activityStatuses 
 
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button size="icon" variant="ghost" aria-label="View Updates" onClick={() => openViewUpdates(activity)}>
+                            <Button size="icon" variant="ghost" aria-label="View Updates" onClick={() => openViewUpdates(activity)} className="cursor-pointer">
                               <Eye className="w-4 h-4" />
                             </Button>
                           </TooltipTrigger>
@@ -438,7 +452,7 @@ export default function Index({ activities: initialActivities, activityStatuses 
 
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button size="icon" variant="secondary" aria-label="Update Status" onClick={() => openUpdateModal(activity)}>
+                            <Button size="icon" variant="secondary" aria-label="Update Status" onClick={() => openUpdateModal(activity)} className="cursor-pointer">
                               <RefreshCw className="w-4 h-4" />
                             </Button>
                           </TooltipTrigger>
@@ -447,7 +461,7 @@ export default function Index({ activities: initialActivities, activityStatuses 
 
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button size="icon" variant="destructive" aria-label="Delete Activity" onClick={() => handleDelete(activity.id)}>
+                            <Button size="icon" variant="destructive" aria-label="Delete Activity" onClick={() => handleDelete(activity.id)} className="cursor-pointer">
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </TooltipTrigger>
@@ -469,6 +483,7 @@ export default function Index({ activities: initialActivities, activityStatuses 
               variant="outline"
               disabled={activities.current_page === 1 || loading}
               onClick={() => goToPage(activities.current_page - 1)}
+              className="cursor-pointer"
             >
               Prev
             </Button>
@@ -481,6 +496,7 @@ export default function Index({ activities: initialActivities, activityStatuses 
               variant="outline"
               disabled={activities.current_page === activities.last_page || loading}
               onClick={() => goToPage(activities.current_page + 1)}
+              className="cursor-pointer"
             >
               Next
             </Button>
@@ -527,10 +543,10 @@ export default function Index({ activities: initialActivities, activityStatuses 
             {formErrors.status_id && <div className="text-sm text-destructive">{Array.isArray(formErrors.status_id) ? formErrors.status_id.join(' ') : formErrors.status_id}</div>}
           </div>
           <DialogFooter className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setModalOpen(false)} disabled={loading}>
+            <Button variant="outline" onClick={() => setModalOpen(false)} disabled={loading} className="cursor-pointer">
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={loading}>
+            <Button onClick={handleSave} disabled={loading} className="cursor-pointer">
               {loading ? (
                 <span className="flex items-center gap-2">
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -569,10 +585,10 @@ export default function Index({ activities: initialActivities, activityStatuses 
             {updateFormErrors.remark && <div className="text-sm text-destructive">{Array.isArray(updateFormErrors.remark) ? updateFormErrors.remark.join(' ') : updateFormErrors.remark}</div>}
           </div>
           <DialogFooter className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setUpdateModalOpen(false)} disabled={loading}>
+            <Button variant="outline" onClick={() => setUpdateModalOpen(false)} disabled={loading} className="cursor-pointer">
               Cancel
             </Button>
-            <Button onClick={handleUpdateSave} disabled={loading}>
+            <Button onClick={handleUpdateSave} disabled={loading} className="cursor-pointer">
               {loading ? (
                 <span className="flex items-center gap-2">
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -647,7 +663,7 @@ export default function Index({ activities: initialActivities, activityStatuses 
               <Button
                 size="sm"
                 variant="outline"
-                className="w-full h-[28px] text-[12px] px-2 py-1"
+                className="w-full h-[28px] text-[12px] px-2 py-1 cursor-pointer"
                 onClick={() => {
                   const today = new Date().toISOString().slice(0, 10);
                   setViewFilters({ ...viewFilters, start_date: today, end_date: today });
@@ -697,7 +713,7 @@ export default function Index({ activities: initialActivities, activityStatuses 
           <div className="flex justify-end w-full mt-4 md:mt-0">
             <Button
               size="sm"
-              className="px-6"
+              className="px-6 cursor-pointer"
               onClick={() => {
                 if (!viewActivity) return;
                 fetchViewUpdates(viewActivity.id, {
@@ -772,6 +788,7 @@ export default function Index({ activities: initialActivities, activityStatuses 
                   page: prev,
                 });
               }}
+              className="cursor-pointer"
             >
               Prev
             </Button>
@@ -798,6 +815,7 @@ export default function Index({ activities: initialActivities, activityStatuses 
                   page: next,
                 });
               }}
+              className="cursor-pointer"
             >
               Next
             </Button>

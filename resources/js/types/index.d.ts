@@ -49,6 +49,7 @@ export interface Activity {
   remark?: string;
   status_id: number;
   creator_name: string;
+  creator: { id: number; name: string };
   updated_at: string;
 }
 
