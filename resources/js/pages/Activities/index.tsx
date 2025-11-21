@@ -17,7 +17,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Check, Clock } from 'lucide-react';
+import { Check, Clock, Eye, Edit, Trash2, RefreshCw } from 'lucide-react';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { Activity, ActivityStatus, ActivityUpdate, Paginator } from '@/types';
 
 interface IndexProps {
@@ -307,10 +308,41 @@ export default function Index({ activities: initialActivities, activityStatuses 
                       <Badge className={getBadgeClasses(getStatus(activity.status_id)?.name)}>
                         {formatStatus(getStatus(activity.status_id)?.name)}
                       </Badge>
-                      <Button size="sm" variant="ghost" onClick={() => openViewUpdates(activity)}>View Updates</Button>
-                      <Button size="sm" variant="outline" onClick={() => openModal(activity)}>Edit</Button>
-                      <Button size="sm" variant="secondary" onClick={() => openUpdateModal(activity)}>Update Status</Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleDelete(activity.id)}>Delete</Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button size="icon" variant="ghost" aria-label="View Updates" onClick={() => openViewUpdates(activity)}>
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>View Updates</TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button size="icon" variant="outline" aria-label="Edit Activity" onClick={() => openModal(activity)}>
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Edit</TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button size="icon" variant="secondary" aria-label="Update Status" onClick={() => openUpdateModal(activity)}>
+                            <RefreshCw className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Update Status</TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button size="icon" variant="destructive" aria-label="Delete Activity" onClick={() => handleDelete(activity.id)}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Delete</TooltipContent>
+                      </Tooltip>
                     </div>
                   </div>
                 ))
@@ -342,10 +374,41 @@ export default function Index({ activities: initialActivities, activityStatuses 
                         </span>
                       </div>
                       <div className="flex gap-2 mt-2">
-                        <Button size="sm" variant="outline" onClick={() => openModal(activity)}>Edit</Button>
-                        <Button size="sm" variant="ghost" onClick={() => openViewUpdates(activity)}>View Updates</Button>
-                        <Button size="sm" variant="secondary" onClick={() => openUpdateModal(activity)}>Update Status</Button>
-                        <Button size="sm" variant="destructive" onClick={() => handleDelete(activity.id)}>Delete</Button>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button size="icon" variant="outline" aria-label="Edit Activity" onClick={() => openModal(activity)}>
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Edit</TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button size="icon" variant="ghost" aria-label="View Updates" onClick={() => openViewUpdates(activity)}>
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>View Updates</TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button size="icon" variant="secondary" aria-label="Update Status" onClick={() => openUpdateModal(activity)}>
+                              <RefreshCw className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Update Status</TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button size="icon" variant="destructive" aria-label="Delete Activity" onClick={() => handleDelete(activity.id)}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Delete</TooltipContent>
+                        </Tooltip>
                       </div>
                     </CardContent>
                   </Card>
