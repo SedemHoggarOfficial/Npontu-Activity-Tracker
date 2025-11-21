@@ -26,10 +26,8 @@ class ActivityFactory extends Factory
 
         return [
             'title' => $this->faker->catchPhrase(),
-            // If you want a TO-DO style title:
-            // 'title' => $this->faker->catchPhrase(),  
             'description' => $this->faker->realText(200),
-            'remark' => $this->faker->optional()->sentence(),
+            'remark' => $this->faker->catchPhrase(),
             'status_id' => $this->faker->randomElement($statusIds),
             'created_by' => $this->faker->randomElement($userIds),
             'is_active' => true,

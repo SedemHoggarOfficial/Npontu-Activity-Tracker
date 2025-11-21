@@ -23,19 +23,28 @@ class DatabaseSeeder extends Seeder
         Activity::query()->delete();       // then activities
         ActivityStatus::query()->delete(); // then statuses
 
+        User::firstOrCreate(
+            ['email' => 'johndoe@example.com'],
+            [
+                'name' => 'John Doe',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        User::firstOrCreate(
+            ['email' => 'janedoe@example.com'],
+            [
+                'name' => 'Jane Doe',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+
         $this->call([
             ActivityStatusSeeder::class,
             ActivitySeeder::class,
             ActivityUpdateSeeder::class,
         ]);
-
-        User::firstOrCreate(
-            ['email' => 'sedemhoggar@gmail.com'],
-            [
-                'name' => 'Sedem Hoggar',
-                'password' => '11111111',
-                'email_verified_at' => now(),
-            ]
-        );
     }
 }
