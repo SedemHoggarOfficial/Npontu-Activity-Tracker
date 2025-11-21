@@ -2,23 +2,13 @@ import { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import ActivityList from '@/components/custom/ActivityList';
+import ActivityGrid from '@/components/custom/ActivityGrid';
 import { Input } from '@/components/ui/input';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Check, Clock, Eye, Edit, Trash2, RefreshCw } from 'lucide-react';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import ActivityModal from '@/components/custom/ActivityModal';
+import UpdateStatusModal from '@/components/custom/UpdateStatusModal';
+import ViewUpdatesModal from '@/components/custom/ViewUpdatesModal';
+import Pagination from '@/components/custom/Pagination';
 import { Activity, ActivityStatus, ActivityUpdate, Paginator } from '@/types';
 
 interface IndexProps {
@@ -52,18 +42,7 @@ const getBadgeClasses = (statusName?: string) => {
 const formatStatus = (statusName?: string) =>
   statusName ? statusName.replace(/_/g, ' ').toUpperCase() : 'UNKNOWN';
 
-function formatReadableDate(dateString: string) {
-  const date = new Date(dateString);
-  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  const dayName = days[date.getDay()];
-  const day = date.getDate();
-  const month = date.toLocaleString('default', { month: 'long' });
-  const year = date.getFullYear();
-  // Ordinal suffix
-  const j = day % 10, k = day % 100;
-  const suffix = (j === 1 && k !== 11) ? "st" : (j === 2 && k !== 12) ? "nd" : (j === 3 && k !== 13) ? "rd" : "th";
-  return `${dayName} ${day}${suffix} ${month} ${year}`;
-}
+// ...existing code...
 
 export default function Index({ activities: initialActivities, activityStatuses }: IndexProps) {
   console.log('activity:', initialActivities);
@@ -353,477 +332,82 @@ export default function Index({ activities: initialActivities, activityStatuses 
               <span>Loading data...</span>
             </div>
           ) : listView ? (
-            <div className="flex flex-col gap-2">
-              {displayedActivities.length > 0 ? (
-                displayedActivities.map(activity => (
-                  <div key={activity.id} className="flex justify-between items-center border rounded-lg p-2 bg-white shadow-sm hover:shadow-md transition-all text-xs">
-                    <div className="flex flex-col gap-1 flex-1">
-                      <span className="font-semibold text-sm text-gray-800">{activity.title}</span>
-                      {activity.remark && (
-                        <span className="text-[11px] text-blue-500 italic">{activity.remark}</span>
-                      )}
-                      <span className="text-[11px] text-gray-500">Created by: {activity.creator.name}</span>
-                      <span className="text-[11px] text-gray-400">{formatReadableDate(activity.updated_at)}</span>
-                    </div>
-                    <div className="flex items-center gap-2 ml-2">
-                      <Badge className={getBadgeClasses(getStatus(activity.status_id)?.name)}>
-                        {formatStatus(getStatus(activity.status_id)?.name)}
-                      </Badge>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button size="icon" variant="ghost" aria-label="View Updates" onClick={() => openViewUpdates(activity)} className="cursor-pointer">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>View Updates</TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button size="icon" variant="outline" aria-label="Edit Activity" onClick={() => openModal(activity)} className="cursor-pointer">
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Edit</TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button size="icon" variant="secondary" aria-label="Update Status" onClick={() => openUpdateModal(activity)} className="cursor-pointer">
-                            <RefreshCw className="w-4 h-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Update Status</TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button size="icon" variant="destructive" aria-label="Delete Activity" onClick={() => handleDelete(activity.id)} className="cursor-pointer">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Delete</TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground">No activities found.</p>
-              )}
-            </div>
+            <ActivityList
+              activities={displayedActivities}
+              getBadgeClasses={getBadgeClasses}
+              formatStatus={formatStatus}
+              getStatus={getStatus}
+              openViewUpdates={openViewUpdates}
+              openModal={openModal}
+              openUpdateModal={openUpdateModal}
+              handleDelete={handleDelete}
+            />
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {displayedActivities.length > 0 ? (
-                displayedActivities.map(activity => (
-                  <Card key={activity.id} className="hover:shadow-lg transition-shadow duration-200">
-                    <CardHeader className="flex justify-between items-start">
-                      <CardTitle className="text-lg font-semibold">{activity.title}</CardTitle>
-                      <Badge className={getBadgeClasses(getStatus(activity.status_id)?.name)}>
-                        {formatStatus(getStatus(activity.status_id)?.name)}
-                      </Badge>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <p className="text-sm text-muted-foreground">{activity.description}</p>
-                      {activity.remark && <p className="text-sm text-blue-500 italic">Remark: {activity.remark}</p>}
-                      <div className="flex justify-between items-center text-xs text-muted-foreground mt-2">
-                        <span className="flex items-center gap-1">
-                          <Check className="w-3 h-3" /> Created by: {activity.creator_name}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          {activity.updated_at}
-                          <Clock className="w-3 h-3" />
-                        </span>
-                      </div>
-                      <div className="flex gap-2 mt-2">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button size="icon" variant="outline" aria-label="Edit Activity" onClick={() => openModal(activity)} className="cursor-pointer">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Edit</TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button size="icon" variant="ghost" aria-label="View Updates" onClick={() => openViewUpdates(activity)} className="cursor-pointer">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>View Updates</TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button size="icon" variant="secondary" aria-label="Update Status" onClick={() => openUpdateModal(activity)} className="cursor-pointer">
-                              <RefreshCw className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Update Status</TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button size="icon" variant="destructive" aria-label="Delete Activity" onClick={() => handleDelete(activity.id)} className="cursor-pointer">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Delete</TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <p className="text-center col-span-full text-muted-foreground">No activities found.</p>
-              )}
-            </div>
+            <ActivityGrid
+              activities={displayedActivities}
+              getBadgeClasses={getBadgeClasses}
+              formatStatus={formatStatus}
+              getStatus={getStatus}
+              openViewUpdates={openViewUpdates}
+              openModal={openModal}
+              openUpdateModal={openUpdateModal}
+              handleDelete={handleDelete}
+            />
           )}
 
           {/* Pagination */}
-          <div className="flex justify-center items-center gap-2 py-4">
-            <Button
-              variant="outline"
-              disabled={activities.current_page === 1 || loading}
-              onClick={() => goToPage(activities.current_page - 1)}
-              className="cursor-pointer"
-            >
-              Prev
-            </Button>
-
-            <span className="text-sm">
-              Page {activities.current_page} of {activities.last_page || 1}
-            </span>
-
-            <Button
-              variant="outline"
-              disabled={activities.current_page === activities.last_page || loading}
-              onClick={() => goToPage(activities.current_page + 1)}
-              className="cursor-pointer"
-            >
-              Next
-            </Button>
-          </div>
+          <Pagination
+            currentPage={activities.current_page}
+            lastPage={activities.last_page || 1}
+            loading={loading}
+            goToPage={goToPage}
+          />
         </div>
       </div>
 
       {/* Modal */}
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editingActivity ? 'Edit Activity' : 'Add Activity'}</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col gap-2">
-            <Input
-              placeholder="Title"
-              value={formData.title}
-              onChange={(e) => handleFormChange('title', e.target.value)}
-            />
-            {formErrors.title && <div className="text-sm text-destructive">{Array.isArray(formErrors.title) ? formErrors.title.join(' ') : formErrors.title}</div>}
-            <Input
-              placeholder="Description"
-              value={formData.description}
-              onChange={(e) => handleFormChange('description', e.target.value)}
-            />
-            {formErrors.description && <div className="text-sm text-destructive">{Array.isArray(formErrors.description) ? formErrors.description.join(' ') : formErrors.description}</div>}
-            <Input
-              placeholder="Remark"
-              value={formData.remark}
-              onChange={(e) => handleFormChange('remark', e.target.value)}
-            />
-            {formErrors.remark && <div className="text-sm text-destructive">{Array.isArray(formErrors.remark) ? formErrors.remark.join(' ') : formErrors.remark}</div>}
-            <select
-              className="border rounded-md p-2"
-              value={formData.statusId}
-              onChange={(e) => handleFormChange('statusId', Number(e.target.value))}
-            >
-              {activityStatuses.map((status) => (
-                <option key={status.id} value={status.id}>
-                  {formatStatus(status.name)}
-                </option>
-              ))}
-            </select>
-            {formErrors.status_id && <div className="text-sm text-destructive">{Array.isArray(formErrors.status_id) ? formErrors.status_id.join(' ') : formErrors.status_id}</div>}
-          </div>
-          <DialogFooter className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setModalOpen(false)} disabled={loading} className="cursor-pointer">
-              Cancel
-            </Button>
-            <Button onClick={handleSave} disabled={loading} className="cursor-pointer">
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  Saving...
-                </span>
-              ) : (editingActivity ? 'Update' : 'Create')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ActivityModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        editingActivity={editingActivity}
+        formData={formData}
+        formErrors={formErrors}
+        loading={loading}
+        activityStatuses={activityStatuses}
+        handleFormChange={handleFormChange}
+        handleSave={handleSave}
+      />
 
       {/* Update Status Modal */}
-      <Dialog open={updateModalOpen} onOpenChange={setUpdateModalOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Update Activity Status</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col gap-2">
-            <select
-              className="border rounded-md p-2"
-              value={updateForm.statusId}
-              onChange={(e) => setUpdateForm({ ...updateForm, statusId: Number(e.target.value) })}
-            >
-              {activityStatuses.map((status) => (
-                <option key={status.id} value={status.id}>
-                  {formatStatus(status.name)}
-                </option>
-              ))}
-            </select>
-            {updateFormErrors.status_id && <div className="text-sm text-destructive">{Array.isArray(updateFormErrors.status_id) ? updateFormErrors.status_id.join(' ') : updateFormErrors.status_id}</div>}
-            <Input
-              placeholder="Remark"
-              value={updateForm.remark}
-              onChange={(e) => setUpdateForm({ ...updateForm, remark: e.target.value })}
-            />
-            {updateFormErrors.remark && <div className="text-sm text-destructive">{Array.isArray(updateFormErrors.remark) ? updateFormErrors.remark.join(' ') : updateFormErrors.remark}</div>}
-          </div>
-          <DialogFooter className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setUpdateModalOpen(false)} disabled={loading} className="cursor-pointer">
-              Cancel
-            </Button>
-            <Button onClick={handleUpdateSave} disabled={loading} className="cursor-pointer">
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  Saving...
-                </span>
-              ) : 'Save Update'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <UpdateStatusModal
+        open={updateModalOpen}
+        onOpenChange={setUpdateModalOpen}
+        updateForm={updateForm}
+        updateFormErrors={updateFormErrors}
+        loading={loading}
+        activityStatuses={activityStatuses}
+        setUpdateForm={setUpdateForm}
+        handleUpdateSave={handleUpdateSave}
+      />
 
       {/* View Updates Modal */}
-    {/* View Updates Modal (refactored like Edit Activity modal) */}
-    <Dialog
-      open={viewUpdatesOpen}
-      onOpenChange={(open) => {
-        // Prevent closing via backdrop or ESC — only allow when allowViewClose flag is set
-        if (open) return setViewUpdatesOpen(true);
-        if (allowViewClose) {
-          setAllowViewClose(false);
-          setViewUpdatesOpen(false);
-        }
-      }}
-    >
-      <DialogContent className="sm:max-w-3xl w-full max-h-[90vh] flex flex-col p-0">
-        
-        {/* Header */}
-        <DialogHeader className="flex justify-between items-center px-6 py-4 border-b">
-          <div className="flex justify-between items-center w-full">
-            <div className="flex flex-col">
-              <DialogTitle className="text-2xl font-extrabold text-blue-700 tracking-tight mb-1">Activity Update</DialogTitle>
-              {viewActivity?.title && (
-                <div className="text-base font-semibold text-gray-700 bg-blue-50 px-3 py-1 rounded shadow-sm w-fit mb-1">{viewActivity.title}</div>
-              )}
-            </div>
-            <button
-              type="button"
-              aria-label="Close"
-              className="ml-2 rounded-full w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-black text-2xl"
-              onClick={() => {
-                setViewUpdatesOpen(false);
-              }}
-            >
-              <span style={{fontSize: '1.75rem', lineHeight: 1}}>&times;</span>
-            </button>
-          </div>
-        </DialogHeader>
-
-        {/* Filters / Controls */}
-        <div className="flex flex-wrap items-center gap-3 px-6 py-3 border-b">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 w-full">
-            <div className="flex flex-col">
-              <label className="text-[11px] font-semibold mb-1 text-gray-600">From</label>
-              <input
-                type="date"
-                className="border border-gray-300 rounded-md px-2 py-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
-                value={viewFilters.start_date ?? ''}
-                onChange={(e) => setViewFilters({ ...viewFilters, start_date: e.target.value })}
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="text-[11px] font-semibold mb-1 text-gray-600">To</label>
-              <input
-                type="date"
-                className="border border-gray-300 rounded-md px-2 py-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
-                value={viewFilters.end_date ?? ''}
-                onChange={(e) => setViewFilters({ ...viewFilters, end_date: e.target.value })}
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="text-[11px] font-semibold mb-1 text-gray-600">&nbsp;</label>
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full h-[28px] text-[12px] px-2 py-1 cursor-pointer"
-                onClick={() => {
-                  const today = new Date().toISOString().slice(0, 10);
-                  setViewFilters({ ...viewFilters, start_date: today, end_date: today });
-                  if (viewActivity)
-                    fetchViewUpdates(viewActivity.id, {
-                      start_date: today,
-                      end_date: today,
-                      per_page: viewPagination.per_page || 10,
-                      page: 1,
-                    });
-                }}
-              >
-                Today
-              </Button>
-            </div>
-            <div className="flex flex-col">
-              <label className="text-[11px] font-semibold mb-1 text-gray-600">User</label>
-              <select
-                className="border border-gray-300 rounded-md px-2 py-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
-                value={viewFilters.user_id ?? ''}
-                onChange={(e) => setViewFilters({ ...viewFilters, user_id: e.target.value || '' })}
-              >
-                <option value="" className="text-gray-500 bg-gray-50 text-[12px]">All</option>
-                {viewUsers.map((u) => (
-                  <option key={u.id} value={u.id} className="text-gray-700 bg-white text-[12px] hover:bg-blue-50">
-                    {u.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex flex-col">
-              <label className="text-[11px] font-semibold mb-1 text-gray-600">Status</label>
-              <select
-                className="border border-gray-300 rounded-md px-2 py-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
-                value={viewFilters.status_id ?? ''}
-                onChange={(e) => setViewFilters({ ...viewFilters, status_id: e.target.value || '' })}
-              >
-                <option value="" className="text-gray-500 bg-gray-50 text-[12px]">All</option>
-                {viewStatuses.map((s) => (
-                  <option key={s.id} value={s.id} className="text-gray-700 bg-white text-[12px] hover:bg-blue-50">
-                    {formatStatus(s.name)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="flex justify-end w-full mt-4 md:mt-0">
-            <Button
-              size="sm"
-              className="px-6 cursor-pointer"
-              onClick={() => {
-                if (!viewActivity) return;
-                fetchViewUpdates(viewActivity.id, {
-                  start_date: viewFilters.start_date,
-                  end_date: viewFilters.end_date,
-                  user_id: viewFilters.user_id ?? undefined,
-                  status_id: viewFilters.status_id ?? undefined,
-                  per_page: viewPagination.per_page || 10,
-                  page: 1,
-                });
-              }}
-            >
-              Apply
-            </Button>
-          </div>
-        </div>
-
-        {/* Scrollable Updates */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-3">
-          {viewLoading ? (
-            <div className="flex items-center gap-3 text-muted-foreground">
-              <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-              <span>Loading updates…</span>
-            </div>
-          ) : viewUpdates.length === 0 ? (
-            <div className="text-center text-muted-foreground">
-              No updates found for the selected range.
-            </div>
-          ) : (
-            viewUpdates.map((u) => (
-              <div key={u.id} className="bg-white border border-gray-200 rounded-xl shadow-md p-4 mb-2 hover:shadow-lg transition-all text-xs">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <div className="flex flex-col gap-1">
-                    <span className="font-semibold text-gray-800">{u.user?.name ?? 'Unknown'}</span>
-                    <div className="mt-1 flex items-center gap-2">
-                      <span className="font-bold text-blue-700 bg-blue-100 px-2 py-1 rounded">
-                        {new Date(u.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-                      </span>
-                      <span className="text-muted-foreground">{new Date(u.created_at).toLocaleTimeString()}</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end md:items-start min-w-[160px] w-full md:w-auto">
-                    <div className="text-gray-500 font-medium">Status</div>
-                    <div className="w-full">
-                      <Badge className={getBadgeClasses(u.status?.name) + ' w-full block text-center'}>{formatStatus(u.status?.name)}</Badge>
-                    </div>
-                  </div>
-                </div>
-                {u.remark && <div className="mt-3 text-slate-700 border-l-4 border-blue-200 pl-3 italic">{u.remark}</div>}
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Footer / Pagination */}
-        <DialogFooter className="flex justify-between items-center px-6 py-4 border-t">
-          <div className="text-sm text-muted-foreground">{viewPagination.total ?? 0} updates</div>
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={!viewPagination.current_page || viewPagination.current_page <= 1 || viewLoading}
-              onClick={() => {
-                if (!viewActivity || !viewPagination.current_page) return;
-                const prev = Math.max(1, (viewPagination.current_page || 1) - 1);
-                fetchViewUpdates(viewActivity.id, {
-                  start_date: viewFilters.start_date,
-                  end_date: viewFilters.end_date,
-                  user_id: viewFilters.user_id ?? undefined,
-                  status_id: viewFilters.status_id ?? undefined,
-                  per_page: viewPagination.per_page || 10,
-                  page: prev,
-                });
-              }}
-              className="cursor-pointer"
-            >
-              Prev
-            </Button>
-            <div className="px-3">
-              Page {viewPagination.current_page ?? 1} / {viewPagination.last_page ?? 1}
-            </div>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={
-                !viewPagination.current_page ||
-                (viewPagination.last_page ? viewPagination.current_page >= viewPagination.last_page : false) ||
-                viewLoading
-              }
-              onClick={() => {
-                if (!viewActivity || !viewPagination.current_page) return;
-                const next = Math.min(viewPagination.last_page || 1, (viewPagination.current_page || 1) + 1);
-                fetchViewUpdates(viewActivity.id, {
-                  start_date: viewFilters.start_date,
-                  end_date: viewFilters.end_date,
-                  user_id: viewFilters.user_id ?? undefined,
-                  status_id: viewFilters.status_id ?? undefined,
-                  per_page: viewPagination.per_page || 10,
-                  page: next,
-                });
-              }}
-              className="cursor-pointer"
-            >
-              Next
-            </Button>
-          </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
+      <ViewUpdatesModal
+        open={viewUpdatesOpen}
+        onOpenChange={setViewUpdatesOpen}
+        allowViewClose={allowViewClose}
+        setAllowViewClose={setAllowViewClose}
+        viewActivity={viewActivity}
+        viewFilters={viewFilters}
+        setViewFilters={setViewFilters}
+        viewUsers={viewUsers}
+        viewStatuses={viewStatuses}
+        viewLoading={viewLoading}
+        viewUpdates={viewUpdates}
+        viewPagination={viewPagination}
+        fetchViewUpdates={fetchViewUpdates}
+        formatStatus={formatStatus}
+        getBadgeClasses={getBadgeClasses}
+      />
     </AppLayout>
   );
 }

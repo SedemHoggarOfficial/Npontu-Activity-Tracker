@@ -44,18 +44,27 @@ class Activity extends Model
         return $query->where('is_active', true);
     }
 
+    /**
+     * Scope a query to only include activities matching a search string.
+     */
+    public function scopeSearch($query, $search)
+    {
+        return $query->where(function($q) use ($search) {
+            $q->where('title', 'like', "%{$search}%")
+              ->orWhere('description', 'like', "%{$search}%")
+              ->orWhereHas('creator', function($q2) use ($search) {
+                  $q2->where('name', 'like', "%{$search}%");
+              });
+        });
+    }
 
-    // Helper functions
-    // public function getLatestUpdate()
-    // {
-    //     return $this->updates()->latest()->first();
-    // }
-
-    // public function getCurrentStatus()
-    // {
-    //     $latestUpdate = $this->getLatestUpdate();
-    //     return $latestUpdate ? $latestUpdate->status : 'pending';
-    // }
+    /**
+     * Scope a query to order by latest.
+     */
+    public function scopeLatestFirst($query)
+    {
+        return $query->orderByDesc('created_at');
+    }
 
     public function getTodayUpdates()
     {
@@ -64,5 +73,18 @@ class Activity extends Model
             ->with('user')
             ->latest()
             ->get();
+    }
+
+    public static function getPaginated($request, $perPage = 4)
+    {
+        $query = self::with(['creator', 'updates' => function($query) {
+            $query->latest()->limit(1);
+        }])->active();
+
+        if ($request->filled('search')) {
+            $query->search($request->query('search'));
+        }
+
+        return $query->latestFirst()->paginate($perPage)->appends($request->only('search'));
     }
 }

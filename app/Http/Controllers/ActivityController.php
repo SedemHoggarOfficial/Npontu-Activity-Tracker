@@ -19,25 +19,8 @@ class ActivityController extends Controller
      */
     public function index(Request $request)
     {
-        $activityStatuses = ActivityStatus::all(); // Fetch all activity statuses
-
-        $query = Activity::with(['creator', 'updates' => function($query) {
-            $query->latest()->limit(1);
-        }])->active();
-
-        // Optional search filter (title, description, or creator name)
-        if ($request->filled('search')) {
-            $search = $request->query('search');
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhereHas('creator', function($q2) use ($search) {
-                      $q2->where('name', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        $activities = $query->latest()->paginate(4)->appends($request->only('search'));
+        $activityStatuses = ActivityStatus::all();
+        $activities = Activity::getPaginated($request);
 
         return Inertia::render('Activities/index', [
             'activities' => $activities,
@@ -121,9 +104,6 @@ class ActivityController extends Controller
         return redirect()->back()->with('success', 'Activity update saved');
     }
 
-    /**
-     * Show updates for a given day (default: today).
-     */
     public function daily(Request $request)
     {
         $date = $request->query('date', today()->toDateString());

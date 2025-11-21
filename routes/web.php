@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\ActivityUpdateController;
 
 Route::get('/', function () {
     return Inertia::render('welcome', [
@@ -35,7 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // JSON endpoint for activity updates (used by index modal)
     Route::get('activities/{activity}/updates-json', [ActivityController::class, 'updatesJson'])->name('activities.updates.json');
 
-    Route::get('activities/todays-updates', [ActivityController::class, 'todaysUpdates'])->name('activities.todays-updates');
+    Route::get('activities/todays-updates', [ActivityUpdateController::class, 'todaysUpdates'])->name('activities.todays-updates');
 
     Route::resource('activities', ActivityController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
 });
