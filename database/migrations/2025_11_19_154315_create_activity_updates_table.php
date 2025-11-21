@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('activity_updates', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('activity_id')->constrained();
-            $table->foreignId('user_id')->constrained();
-            $table->foreignId('status_id')->constrained('activity_statuses'); 
+            $table->foreignId('activity_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('status_id')->constrained('activity_statuses')->onDelete('cascade'); 
             $table->text('remark')->nullable();
             $table->timestamps();
             $table->index(['activity_id','user_id','updated_at']);

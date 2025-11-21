@@ -28,7 +28,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('activities/{activity}/updates', [ActivityUpdateController::class, 'storeUpdate'])->name('activities.updates.store');
     Route::get('activities/{activity}/updates-json', [ActivityUpdateController::class, 'updatesJson'])->name('activities.updates.json');
 
-    Route::resource('activities', ActivityController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
+    Route::resource('activities', ActivityController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
 });
 
 require __DIR__.'/settings.php';

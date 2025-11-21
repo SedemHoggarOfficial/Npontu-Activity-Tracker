@@ -85,49 +85,49 @@ class ActivityController extends Controller
 
 
 
-    public function updatesJson(Request $request, Activity $activity)
-    {
-        $query = $activity->updates()->with(['user', 'status']);
+    // public function updatesJson(Request $request, Activity $activity)
+    // {
+    //     $query = $activity->updates()->with(['user', 'status']);
 
-        // default to today
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $start = Carbon::parse($request->query('start_date'))->startOfDay();
-            $end = Carbon::parse($request->query('end_date'))->endOfDay();
-            $query->whereBetween('created_at', [$start, $end]);
-        } elseif ($request->filled('date')) {
-            $date = Carbon::parse($request->query('date'))->toDateString();
-            $query->whereDate('created_at', $date);
-        } else {
-            $query->whereDate('created_at', today());
-        }
+    //     // default to today
+    //     if ($request->filled('start_date') && $request->filled('end_date')) {
+    //         $start = Carbon::parse($request->query('start_date'))->startOfDay();
+    //         $end = Carbon::parse($request->query('end_date'))->endOfDay();
+    //         $query->whereBetween('created_at', [$start, $end]);
+    //     } elseif ($request->filled('date')) {
+    //         $date = Carbon::parse($request->query('date'))->toDateString();
+    //         $query->whereDate('created_at', $date);
+    //     } else {
+    //         $query->whereDate('created_at', today());
+    //     }
 
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->query('user_id'));
-        }
+    //     if ($request->filled('user_id')) {
+    //         $query->where('user_id', $request->query('user_id'));
+    //     }
 
-        if ($request->filled('status_id')) {
-            $query->where('status_id', $request->query('status_id'));
-        }
+    //     if ($request->filled('status_id')) {
+    //         $query->where('status_id', $request->query('status_id'));
+    //     }
 
-        // $updates = $query->orderBy('created_at', 'asc')->get();
-        $perPage = (int) $request->query('per_page', 10);
-        $page = (int) $request->query('page', 1);
+    //     // $updates = $query->orderBy('created_at', 'asc')->get();
+    //     $perPage = (int) $request->query('per_page', 10);
+    //     $page = (int) $request->query('page', 1);
 
-        $updates = $query
-            ->orderBy('created_at', 'asc')
-            ->paginate($perPage, ['*'], 'page', $page);
+    //     $updates = $query
+    //         ->orderBy('created_at', 'asc')
+    //         ->paginate($perPage, ['*'], 'page', $page);
 
-        // Provide user and status lists to populate modal selects
-        $users = \App\Models\User::select('id', 'name', 'email')->orderBy('name')->get();
-        $statuses = ActivityStatus::all();
+    //     // Provide user and status lists to populate modal selects
+    //     $users = \App\Models\User::select('id', 'name', 'email')->orderBy('name')->get();
+    //     $statuses = ActivityStatus::all();
 
-        return response()->json([
-            'activity' => $activity,
-            'updates' => $updates,
-            'users' => $users,
-            'statuses' => $statuses,
-        ]);
-    }
+    //     return response()->json([
+    //         'activity' => $activity,
+    //         'updates' => $updates,
+    //         'users' => $users,
+    //         'statuses' => $statuses,
+    //     ]);
+    // }
 
     /**
      * Show the form for editing the specified resource.
@@ -161,7 +161,8 @@ class ActivityController extends Controller
      */
     public function destroy(Activity $activity)
     {
-        //
+        $activity->delete();
+        return redirect()->route('activities.index')->with('success', 'Activity deleted successfully!');
     }
 
 }
