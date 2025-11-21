@@ -48,7 +48,7 @@ export default function TodaysUpdates() {
   });
 
   function applyFilters(newFilters: Partial<typeof localFilters>) {
-    router.get('/activities/todays-updates', {
+    router.get('/todays-updates', {
       ...localFilters,
       ...newFilters,
       page: 1,
@@ -56,14 +56,14 @@ export default function TodaysUpdates() {
   }
 
   function goToPage(page: number) {
-    router.get('/activities/todays-updates', {
+    router.get('/todays-updates', {
       ...localFilters,
       page,
     }, { preserveState: true });
   }
 
   return (
-    <AppLayout breadcrumbs={[{title:"Today's Updates",href:'/activities/todays-updates'}]}>
+    <AppLayout breadcrumbs={[{title:"Today's Updates",href:'/todays-updates'}]}>
       <div className="p-6">
         <h1 className="text-xl font-bold mb-4">Today's Activity Updates</h1>
         <div className="flex flex-wrap items-center gap-3 mb-4 border-b pb-3">

@@ -24,7 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('activities/{activity}/details', [ActivityController::class, 'dailyDetails'])->name('activities.details');
 
     // Activity updates (status changes / remarks, today's updates, and JSON endpoints)
-    Route::get('activities/todays-updates', [ActivityUpdateController::class, 'todaysUpdates'])->name('activities.todays-updates');
+    Route::get('todays-updates', [ActivityUpdateController::class, 'todaysUpdates'])->name('todays-updates');
     Route::post('activities/{activity}/updates', [ActivityUpdateController::class, 'storeUpdate'])->name('activities.updates.store');
     Route::get('activities/{activity}/updates-json', [ActivityUpdateController::class, 'updatesJson'])->name('activities.updates.json');
 

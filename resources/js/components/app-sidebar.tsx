@@ -29,7 +29,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: "Today's Updates",
-        href: '/activities/todays-updates',
+        href: '/todays-updates',
         icon: ListTodo,
     },
 ];
